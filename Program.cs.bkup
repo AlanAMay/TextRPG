@@ -1,0 +1,222 @@
+﻿using System;
+using System.IO;
+
+namespace TextRPG
+{
+
+    class Program
+    {
+        enum ClassSelection
+        {
+            Warrior = 1,
+            Rogue = 2,
+            Mage = 3
+        }
+
+        enum LocationSelection
+        {
+            Town = 1,
+            Forest = 2,
+            Dungeon = 3,
+            Swamp = 4
+        }
+
+        class WarriorSpec
+        {
+            public int Health = 120;
+            public int Attack = 10;
+            public List<string> MoveSet = ["Slash", "Shield Block", "Run"];
+        }
+        class RogueSpec
+        {
+            public int Health = 100;
+            public int Attack = 18;
+            public List<string> MoveSet = ["Stab", "Dagger Throw", "Run"];
+        }
+
+        class MageSpec
+        {
+            public int Health = 80;
+            public int Attack = 22;
+            public List<string> MoveSet = ["Fireball", "Ice Block", "Teleport Away"];
+        }
+
+        class Player
+        {
+            public int Health;
+            public int Attack;
+            public List<string> MoveSet;
+            public string? Location;
+
+            public Player(WarriorSpec warrior)
+            {
+                Health = warrior.Health;
+                Attack = warrior.Attack;
+                MoveSet = warrior.MoveSet;
+            }
+            public Player(RogueSpec rogue)
+            {
+                Health = rogue.Health;
+                Attack = rogue.Attack;
+                MoveSet = rogue.MoveSet;
+            }
+            public Player(MageSpec mage)
+            {
+                Health = mage.Health;
+                Attack = mage.Attack;
+                MoveSet = mage.MoveSet;
+            }
+        }
+        class Dialog
+        {
+            public string? Message;
+            public string[] Choices;
+            public Dialog(string inputMessage, string[] inputChoices)
+            {
+                Message = inputMessage;
+                Choices = inputChoices;
+            }
+        }
+
+        static void MenuGreeting()
+        {
+            Console.WriteLine("");
+            Console.WriteLine("╔════════════════════════════════╗");
+            Console.WriteLine("║     Welcome to TextRPG!        ║");
+            Console.WriteLine("╚════════════════════════════════╝\n");
+        }
+
+        static void PresentDialog(Dialog dialog)
+        {
+            Console.WriteLine(dialog.Message);
+            for (int i = 0; i < dialog.Choices.Length; i++)
+            {
+                Console.WriteLine($"{i + 1}. {dialog.Choices[i]}");
+            }
+        }
+        // Validates an integer-based enum selection from string input.
+        // Returns true and the parsed enum value if valid; otherwise false.
+        private static bool TryValidateSelection<TEnum>(string input, out TEnum selection)
+            where TEnum : struct, Enum
+        {
+            selection = default;
+            if (!int.TryParse(input, out int number))
+                return false;
+
+            if (!Enum.IsDefined(typeof(TEnum), number))
+                return false;
+
+            selection = (TEnum)Enum.ToObject(typeof(TEnum), number);
+            return true;
+        }
+        static void Main()
+        {
+            bool mainMenu = true;
+
+            MenuGreeting();
+
+
+            Player? playerCharacter = null;
+
+            while (mainMenu)
+            {
+                Console.WriteLine("1. Play the Warrior");
+                Console.WriteLine("2. Play the Rogue");
+                Console.WriteLine("3. Play the Mage");
+
+                string classInput = Console.ReadLine() ?? "";
+
+                if (!TryValidateSelection<ClassSelection>(classInput, out var classChoice))
+                {
+                    Console.WriteLine("Invalid choice.\n");
+                    continue;
+                }
+
+                switch (classChoice)
+                {
+                    case ClassSelection.Warrior:
+                        var warrior = new WarriorSpec();
+                        playerCharacter = new Player(warrior);
+                        Console.WriteLine("\nYou picked Warrior, here are your stats\n");
+                        break;
+                    case ClassSelection.Rogue:
+                        var rogue = new RogueSpec();
+                        playerCharacter = new Player(rogue);
+                        Console.WriteLine("\nYou picked Rogue, here are your stats\n");
+                        break;
+                    case ClassSelection.Mage:
+                        var mage = new MageSpec();
+                        playerCharacter = new Player(mage);
+                        Console.WriteLine("\nYou picked Mage, here are your stats\n");
+                        break;
+                }
+                if (playerCharacter == null)
+                {
+                    Console.WriteLine("Player Creation Failed");
+                    return;
+                }
+                Console.WriteLine($"Health: {playerCharacter.Health}");
+                Console.WriteLine($"Attack: {playerCharacter.Attack}");
+                Console.WriteLine($"Move Set: {string.Join(", ", playerCharacter.MoveSet)}");
+                Console.WriteLine("\nGame has Started\n");
+
+                // Move to running state
+                mainMenu = false;
+
+                if (playerCharacter == null)
+                {
+                    mainMenu = true;
+                    continue;
+                }
+
+
+            }
+            Console.WriteLine("You come to a crossing, where would you like to go?");
+            Console.WriteLine("1. Town");
+            Console.WriteLine("2. Forest");
+            Console.WriteLine("3. Dungeon");
+
+            string townInput = Console.ReadLine() ?? "";
+
+            if (!TryValidateSelection<LocationSelection>(townInput, out var townChoice))
+            {
+                Console.WriteLine("Invalid choice.\n");
+                mainMenu = true;
+            }
+
+            switch (townChoice)
+            {
+                case LocationSelection.Town:
+                    Console.WriteLine("You head to the Town.\n");
+                    playerCharacter.Location = "Town";
+                    break;
+                case LocationSelection.Forest:
+                    Console.WriteLine("You enter the Forest.\n");
+                    playerCharacter.Location = "Forest";
+                    break;
+                case LocationSelection.Dungeon:
+                    Console.WriteLine("You descend into the Dungeon.\n");
+                    playerCharacter.Location = "Dungeon";
+                    break;
+            }
+
+            if (playerCharacter.Location == "Town")
+            {
+                string oldWomenFirstMessage = "An old women approaches you, \"Welcome traveler, not seen you before. Come, I'll take you to my daughter, she runs the local Tavern.\"";
+                string[] oldWomenFirstChoices = ["Follow", "Walk Away"];
+                var introToTownDialog = new Dialog(oldWomenFirstMessage, oldWomenFirstChoices);
+
+                PresentDialog(introToTownDialog);
+            }
+            return;
+            /*
+            Create a Main Menu where the player creates their character. The character needs a name and a spec.
+            Place the character into the starting location and give them options on other locations to travel to.
+            Create NPC's for the players to interact with, they should have a line of text and give options for the player to interact with them.
+            Create Enemies for the player to fight.
+            Game should store if the player has been to a locations before.
+            */
+
+        }
+    }
+}
