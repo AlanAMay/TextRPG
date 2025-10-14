@@ -17,6 +17,7 @@ namespace TextRPGOne
             private int _intelligence;
             private int _constitution;
             private int _initiative;
+            private List<Item> _inventory = new List<Item>();
             private Move[] _moveSet;
             private Location _currentLocation;
             private PrimaryStatType _primaryStat;
@@ -32,6 +33,7 @@ namespace TextRPGOne
             public int Intelligence { get => _intelligence; set => _intelligence = value; }
             public int Constitution { get => _constitution; set => _constitution = value; }
             public int Initiative { get => _initiative; set => _initiative = value; }
+            public List<Item> Inventory { get => _inventory; [MemberNotNull(nameof(_inventory))] set => _inventory = value; }
             public Move[] MoveSet { get => _moveSet; [MemberNotNull(nameof(_moveSet))] set => _moveSet = value; }
             public Location CurrentLocation { get => _currentLocation; [MemberNotNull(nameof(_currentLocation))] set => _currentLocation = value; }
             public int PrimaryStat
@@ -65,9 +67,17 @@ namespace TextRPGOne
                 this.Mana = 100 + Intelligence * 10;
                 this.MaxHealth = this.Health;
                 this.MaxMana = this.Mana;
+                SetInitiative();
             }
 
+
         }
+        public void OpenInventory()
+        {
+            if (playerCharacter == null) return;
+            playerCharacter.Inventory.ForEach(item => Console.WriteLine(item.Name));
+        }
+
         static PlayerCharacter? playerCharacter;
 
         // static void PlayerStats()

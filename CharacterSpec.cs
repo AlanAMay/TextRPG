@@ -45,7 +45,7 @@ namespace TextRPGOne
             Slash,
             Block
         };
-        static CharacterSpec Warrior = new CharacterSpec("Warrior", "The Warrior is a stout class with decent damage", 16/*STR*/, 8/*DEX*/, 6/*INT*/, 8/*CON*/, WarriorMoveSet);
+        static CharacterSpec Warrior = new CharacterSpec("Warrior", "The Warrior is a stout class with decent damage", 14/*STR*/, 8/*DEX*/, 6/*INT*/, 10/*CON*/, WarriorMoveSet);
 
         static Move Stab = new Move("Stab", "You gouge them with your blade", 28, 0);
         static Move Dodge = new Move("Dodge", "You try to avoid the next attack", 0, 0);
@@ -53,7 +53,7 @@ namespace TextRPGOne
             Stab,
             Dodge
         };
-        static CharacterSpec Rogue = new CharacterSpec("Rogue", "The Rogue is a high damage class with low health", 8/*STR*/, 16/*DEX*/, 8/*INT*/, 6/*CON*/, RogueMoveSet);
+        static CharacterSpec Rogue = new CharacterSpec("Rogue", "The Rogue is a high damage class with low health", 6/*STR*/, 16/*DEX*/, 8/*INT*/, 8/*CON*/, RogueMoveSet);
 
         static Move Fireball = new Move("Fireball", "You hurl a ball of fire", 35, 20);
         static Move Barrier = new Move("Barrier", "You cast a barrier around yourself", 0, 35);
@@ -61,6 +61,6 @@ namespace TextRPGOne
             Fireball,
             Barrier
         };
-        static CharacterSpec Mage = new CharacterSpec("Mage", "The Mage is busted", 6/*STR*/, 8/*DEX*/, 16/*INT*/, 8/*CON*/, MageMoveSet);
+        static CharacterSpec Mage = new CharacterSpec("Mage", "The Mage is busted", 8/*STR*/, 8/*DEX*/, 16/*INT*/, 6/*CON*/, MageMoveSet);
     }
 }

@@ -44,7 +44,7 @@ namespace TextRPGOne
             AnsiConsole.Status()
             .Start($"You encounter a {currentEnemy.Name}!", ctx =>
                 {
-                    Thread.Sleep(3000);
+                    Thread.Sleep(3500);
                 });
 
             // Roll initiative ONCE at the start of combat
@@ -97,6 +97,12 @@ namespace TextRPGOne
                         Move playerAction = playerCharacter.MoveSet.First(m => m.Name == playerMoveName);
                         if (playerAction.ManaCost <= playerCharacter.Mana)
                         {
+                            AnsiConsole.Status()
+                                .Start($"{playerAction.Description}", ctx =>
+                                {
+                                    AnsiConsole.MarkupLine($"{playerCharacter.Name} is Attcking...");
+                                    Thread.Sleep(3500);
+                                });
                             playerCharacter.Mana -= playerAction.ManaCost;
                             moveCastValid = true;
 
@@ -135,9 +141,33 @@ namespace TextRPGOne
 
                 void EnemyAttack()
                 {
+                    // Pick Enemy
                     if (playerCharacter == null) return;
+                    // Initial Display
+                    Console.Clear();
+                    DrawNPCEncounterBar(currentEnemy);
+                    DrawPlayerEncounterBar(playerCharacter);
+
+                    // Display combat log before action
+                    if (combatLog.Count > 0)
+                    {
+                        Console.WriteLine("\n[Combat Log]");
+                        foreach (var log in combatLog)
+                        {
+                            AnsiConsole.MarkupLine(log);
+                        }
+                        Console.WriteLine();
+                    }
+
                     int randomEnemyMove = random.Next(currentEnemy.MoveSet.Length);
                     Move npcAction = currentEnemy.MoveSet[randomEnemyMove];
+
+                    AnsiConsole.Status()
+                        .Start($"{npcAction.Description}", ctx =>
+                        {
+                            AnsiConsole.MarkupLine($"Enemy Attcking...");
+                            Thread.Sleep(3500);
+                        });
 
                     //Enemy Damage Calc
                     int enemyBaseDamage = (currentEnemy.PrimaryStat + npcAction.Damage) / 2;
@@ -160,7 +190,7 @@ namespace TextRPGOne
                     }
                     Console.WriteLine();
 
-                    Thread.Sleep(1500);
+                    Thread.Sleep(1000);
                 }
 
                 // Execute attacks based on initiative (determined once at start)
@@ -187,9 +217,6 @@ namespace TextRPGOne
                     }
                 }
 
-                // Display everything after both turns with pause
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey();
 
                 // Check for combat end
                 if (currentEnemy.Health <= 0)
@@ -205,8 +232,12 @@ namespace TextRPGOne
                         AnsiConsole.MarkupLine(log);
                     }
 
+                    //TODO Add enemy item drops /  Store instances of items in Character Invetory
                     AnsiConsole.MarkupLine($"\n[yellow]You defeated the {currentEnemy.Name}![/]");
                     AnsiConsole.MarkupLine($"[yellow]You found {currentEnemy.GoldDrop} gold![/]");
+
+
+                    Console.WriteLine();
                     Console.ReadKey();
                     break;
                 }
@@ -239,7 +270,7 @@ namespace TextRPGOne
             AnsiConsole.Status()
                 .Start("Exploring...", ctx =>
                 {
-                    Thread.Sleep(3000);
+                    Thread.Sleep(3500);
                 });
             if (randomOneHundred <= 100)
             {
@@ -319,7 +350,7 @@ namespace TextRPGOne
                         CreateCharacter();  // Create character first
                         if (playerCharacter != null)  // Only play if character was created successfully
                         {
-                            PlayGame();
+                            PlayGame(playerCharacter);
                         }
                         break;
                     case MainLoopOptions.QuitGame:
@@ -389,16 +420,15 @@ namespace TextRPGOne
             } while (playerCharacter == null);
         }
 
-        static void PlayGame()
+        static void PlayGame(PlayerCharacter player)
         {
-            if (playerCharacter == null) return;
             Console.Clear();
             InitializeLocations();
 
-            while (playerCharacter.Health > 0)
+            while (player.Health > 0)
             {
                 Console.Clear();
-                playerCharacter.CurrentLocation.DisplayImage();
+                player.CurrentLocation.DisplayImage();
                 InGameMenu();
             }
 
