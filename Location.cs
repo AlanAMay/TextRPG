@@ -21,9 +21,8 @@ namespace TextRPGOne
             public List<NPC> PossibleEnemies { get => _possibleEnemies; [MemberNotNull(nameof(_possibleEnemies))] set => _possibleEnemies = value; }
             public bool IsSafeZone { get => _isSafeZone; set => _isSafeZone = value; }
             public string ImagePath { get => _imagePath; [MemberNotNull(nameof(_imagePath))] set => _imagePath = value; }
-            public void DisplayImage()
+            public void DisplayImage(PlayerCharacter player)
             {
-                if (playerCharacter == null) return;
                 if (ImagePath == "") { return; }
                 var rule = new Rule(Name);
                 rule.Style = Style.Parse("grey");
@@ -40,7 +39,7 @@ namespace TextRPGOne
                 // Renders each item with own style
                 AnsiConsole.Write(new Rows(rows));
                 AnsiConsole.Write(bottomRule);
-                DrawStatusBar(playerCharacter);
+                DrawStatusBar(player);
                 Console.WriteLine();
             }
             public Location(string Name, string Description, string ImagePath, bool IsSafeZone = false)
@@ -117,34 +116,6 @@ namespace TextRPGOne
         {
             DarkForest.PossibleEnemies.Add(Goblin);
             DarkForest.PossibleEnemies.Add(Wolf);
-        }
-        static void LocationOptions()
-        {
-            if (playerCharacter == null) return;
-
-            for (int i = 0; i < playerCharacter.CurrentLocation.ConnectedLocations.Count; i++)
-            {
-                Console.WriteLine($"{i + 1}. {playerCharacter.CurrentLocation.ConnectedLocations[i].Name}");
-            }
-
-            int playerChoice;
-            bool isValid;
-            do
-            {
-                string input = Console.ReadLine() ?? "";
-                bool isParsed = int.TryParse(input, out playerChoice);
-                bool isInRange = playerChoice >= 1 && playerChoice <= playerCharacter.CurrentLocation.ConnectedLocations.Count;
-                isValid = isParsed && isInRange;
-
-                if (!isValid)
-                {
-                    return;
-                }
-            } while (!isValid);
-
-            Console.Clear();
-            playerCharacter.CurrentLocation = playerCharacter.CurrentLocation.ConnectedLocations[playerChoice - 1];
-            playerCharacter.CurrentLocation.DisplayImage();
         }
     }
 }

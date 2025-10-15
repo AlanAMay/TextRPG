@@ -5,43 +5,49 @@ namespace TextRPGOne
 {
     partial class Program
     {
+        static string HealthBarColor = "#00d75f";
+        static string ManaBarColor = "#00afff";
+        static string ExpBarColor = "#ffff87";
         static void DrawStatusBar(PlayerCharacter player)
         {
-            if (playerCharacter == null) return;
-
             // Create custom health bar
             int barWidth = 40;
 
             // Clamp health to 0 minimum
             int currentHealth = Math.Max(0, player.Health);
-            int healthFilled = (int)((double)currentHealth / playerCharacter.MaxHealth * barWidth);
+            int healthFilled = (int)((double)currentHealth / player.MaxHealth * barWidth);
             healthFilled = Math.Max(0, Math.Min(healthFilled, barWidth));
             string healthBar = new string('█', healthFilled) + new string('░', barWidth - healthFilled);
 
             // Clamp mana to 0 minimum
             int currentMana = Math.Max(0, player.Mana);
-            int manaFilled = (int)((double)currentMana / playerCharacter.MaxMana * barWidth);
+            int manaFilled = (int)((double)currentMana / player.MaxMana * barWidth);
             manaFilled = Math.Max(0, Math.Min(manaFilled, barWidth));
             string manaBar = new string('█', manaFilled) + new string('░', barWidth - manaFilled);
 
+            // Clamp exp to 0 minimum
+            int currentExp = Math.Max(0, player.Exp);
+            int expFilled = (int)((double)currentExp / player.MaxExp * barWidth);
+            expFilled = Math.Max(0, Math.Min(expFilled, barWidth));
+            string expBar = new string('█', expFilled) + new string('░', barWidth - expFilled);
+
             var grid = new Grid()
                 .AddColumn()
-                .AddRow($"[yellow]{player.Name}\n[/]")
-                .AddRow($"[green]Health:[/] [green]{healthBar}[/] [white]{currentHealth}/{playerCharacter.MaxHealth}[/]")
-                .AddRow($"[blue]Mana:[/]   [blue]{manaBar}[/] [white]{currentMana}/{playerCharacter.MaxMana}[/]");
+                .AddRow($"[white]{player.Name}\n[/]")
+                .AddRow($"[{HealthBarColor}]Health:[/] [{HealthBarColor}]{healthBar}[/] [white]{currentHealth}/{player.MaxHealth}[/]")
+                .AddRow($"[{ManaBarColor}]Mana:[/]   [{ManaBarColor}]{manaBar}[/] [white]{currentMana}/{player.MaxMana}[/]")
+                .AddRow($"[{ExpBarColor}]EXP: [/]   [{ExpBarColor}]{expBar}[/] [white]{currentExp}/{player.MaxExp}[/]");
 
             AnsiConsole.Write(new Padder(grid).Padding(2, 1, 2, 1));
         }
-        static void DrawCharacterStats()
+        static void DrawCharacterStats(PlayerCharacter player)
         {
-            if (playerCharacter == null) return;
-
             string statsText = $@"
-[yellow]Class:[/]        [yellow]{playerCharacter.SpecName}[/]
-[cyan]Strength:[/]     [yellow]{playerCharacter.Strength}[/]
-[cyan]Dexterity:[/]    [yellow]{playerCharacter.Dexterity}[/]
-[cyan]Intelligence:[/] [yellow]{playerCharacter.Intelligence}[/]
-[cyan]Constitution:[/] [yellow]{playerCharacter.Constitution}[/]";
+[yellow]Class:[/]        [yellow]{player.SpecName}[/]
+[cyan]Strength:[/]     [yellow]{player.Strength}[/]
+[cyan]Dexterity:[/]    [yellow]{player.Dexterity}[/]
+[cyan]Intelligence:[/] [yellow]{player.Intelligence}[/]
+[cyan]Constitution:[/] [yellow]{player.Constitution}[/]";
 
             var statsPanel = new Panel(statsText)
                 .Header("[bold yellow] Stats [/]")
@@ -53,28 +59,26 @@ namespace TextRPGOne
         }
         static void DrawPlayerEncounterBar(PlayerCharacter player)
         {
-            if (playerCharacter == null) return;
-
             // Create custom health bar
             int barWidth = 60;
 
             // Clamp health to 0 minimum
             int currentHealth = Math.Max(0, player.Health);
-            int healthFilled = (int)((double)currentHealth / playerCharacter.MaxHealth * barWidth);
+            int healthFilled = (int)((double)currentHealth / player.MaxHealth * barWidth);
             healthFilled = Math.Max(0, Math.Min(healthFilled, barWidth));
             string healthBar = new string('█', healthFilled) + new string('░', barWidth - healthFilled);
 
             // Clamp mana to 0 minimum
             int currentMana = Math.Max(0, player.Mana);
-            int manaFilled = (int)((double)currentMana / playerCharacter.MaxMana * barWidth);
+            int manaFilled = (int)((double)currentMana / player.MaxMana * barWidth);
             manaFilled = Math.Max(0, Math.Min(manaFilled, barWidth));
             string manaBar = new string('█', manaFilled) + new string('░', barWidth - manaFilled);
 
             var grid = new Grid()
                 .AddColumn()
                 .AddRow($"[yellow]{player.Name}\n[/]")
-                .AddRow($"[green]Health:[/] [green]{healthBar}[/] [white]{currentHealth}/{playerCharacter.MaxHealth}[/]")
-                .AddRow($"[blue]Mana:[/]   [blue]{manaBar}[/] [white]{currentMana}/{playerCharacter.MaxMana}[/]");
+                .AddRow($"[green]Health:[/] [green]{healthBar}[/] [white]{currentHealth}/{player.MaxHealth}[/]")
+                .AddRow($"[{ManaBarColor}]Mana:[/]   [{ManaBarColor}]{manaBar}[/] [white]{currentMana}/{player.MaxMana}[/]");
 
             AnsiConsole.Write(new Padder(grid).Padding(3, 1));
             Console.WriteLine();
@@ -100,7 +104,7 @@ namespace TextRPGOne
                 .AddColumn()
                 .AddRow($"[red]{npc.Name}\n[/]")
                 .AddRow($"[red]Health:[/] [red]{healthBar}[/] [white]{currentHealth}/{npc.MaxHealth}[/]")
-                .AddRow($"[blue]Mana:[/]   [blue]{manaBar}[/] [white]{currentMana}/{npc.MaxMana}[/]");
+                .AddRow($"[{ManaBarColor}]Mana:[/]   [{ManaBarColor}]{manaBar}[/] [white]{currentMana}/{npc.MaxMana}[/]");
 
             AnsiConsole.Write(new Padder(grid).Padding(3, 1));
             Console.WriteLine();

@@ -17,10 +17,14 @@ namespace TextRPGOne
             private int _intelligence;
             private int _constitution;
             private int _initiative;
+            private PrimaryStatType _primaryStat;
+            private int _money;
+            private int _level;
+            private int _exp;
+            private int _maxExp;
             private List<Item> _inventory = new List<Item>();
             private Move[] _moveSet;
             private Location _currentLocation;
-            private PrimaryStatType _primaryStat;
 
             public string Name { get => _name; [MemberNotNull(nameof(_name))] set => _name = value; }
             public string SpecName { get => _specName; [MemberNotNull(nameof(_specName))] set => _specName = value; }
@@ -33,9 +37,6 @@ namespace TextRPGOne
             public int Intelligence { get => _intelligence; set => _intelligence = value; }
             public int Constitution { get => _constitution; set => _constitution = value; }
             public int Initiative { get => _initiative; set => _initiative = value; }
-            public List<Item> Inventory { get => _inventory; [MemberNotNull(nameof(_inventory))] set => _inventory = value; }
-            public Move[] MoveSet { get => _moveSet; [MemberNotNull(nameof(_moveSet))] set => _moveSet = value; }
-            public Location CurrentLocation { get => _currentLocation; [MemberNotNull(nameof(_currentLocation))] set => _currentLocation = value; }
             public int PrimaryStat
             {
                 get =>
@@ -47,35 +48,60 @@ namespace TextRPGOne
                         _ => 0
                     };
             }
+            public int Money { get => _money; set => _money = value; }
+            public int Level { get => _level; set => _level = value; }
+            public int Exp { get => _exp; set => _exp = value; }
+            public int MaxExp { get => _maxExp; set => _maxExp = value; }
+            public List<Item> Inventory { get => _inventory; [MemberNotNull(nameof(_inventory))] set => _inventory = value; }
+            public Move[] MoveSet { get => _moveSet; [MemberNotNull(nameof(_moveSet))] set => _moveSet = value; }
+            public Location CurrentLocation { get => _currentLocation; [MemberNotNull(nameof(_currentLocation))] set => _currentLocation = value; }
             private int SetInitiative()
             {
                 Initiative = (Dexterity - 10) / 2;
                 return Initiative;
             }
-            public PlayerCharacter(string Name, string SpecName, PrimaryStatType PrimaryStat, int Strength, int Dexterity, int Intelligence, int Constitution, Move[] MoveSet, Location StartingLocation)
+            public PlayerCharacter(string Name, CharacterSpec Spec, Location StartingLocation)
             {
                 this.Name = Name;
-                this.SpecName = SpecName;
-                this._primaryStat = PrimaryStat;
-                this.Strength = Strength;
-                this.Dexterity = Dexterity;
-                this.Intelligence = Intelligence;
-                this.Constitution = Constitution;
-                this.MoveSet = MoveSet;
+                this.SpecName = Spec.Name;
+                this._primaryStat = Spec.PrimaryStat;
+                this.Strength = Spec.Strength;
+                this.Dexterity = Spec.Dexterity;
+                this.Intelligence = Spec.Intelligence;
+                this.Constitution = Spec.Constitution;
+                this.MoveSet = Spec.MoveSet;
                 this.CurrentLocation = StartingLocation;
                 this.Health = 100 + Constitution * 10;
                 this.Mana = 100 + Intelligence * 10;
                 this.MaxHealth = this.Health;
                 this.MaxMana = this.Mana;
+                this.Money = 0;
+                this.Level = 1;
+                this.MaxExp = (int)(100 * Math.Pow(1.07, Level));
+                this.MaxExp -= 7;
                 SetInitiative();
             }
-
+            public void ExpAdd(int exp)
+            {
+                this.Exp += exp;
+                if (this.Exp >= this.MaxExp)
+                {
+                    this.Level++;
+                    int expOver = this.Exp - this.MaxExp;
+                    this.Exp = 0;
+                    this.Exp += expOver;
+                    this.MaxExp = (int)(100 * Math.Pow(1.07, Level));
+                }
+            }
 
         }
-        public void OpenInventory()
+
+        static void OpenInventory(PlayerCharacter player)
         {
-            if (playerCharacter == null) return;
-            playerCharacter.Inventory.ForEach(item => Console.WriteLine(item.Name));
+            player.Inventory.ForEach(item => Console.WriteLine(item.Name));
+            Console.WriteLine();
+            Console.WriteLine(player.Money);
+            Console.ReadKey();
         }
 
         static PlayerCharacter? playerCharacter;

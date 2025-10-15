@@ -4,12 +4,6 @@ namespace TextRPGOne
 {
     partial class Program
     {
-        public enum PrimaryStatType
-        {
-            Strength,
-            Dexterity,
-            Intelligence
-        }
         class NPC
         {
             private string _name;
@@ -24,8 +18,10 @@ namespace TextRPGOne
             private int _constitution;
             private int _initiative;
             private Move[] _moveSet;
-            private ItemType[] _lootTable;
+            private LootTableItem[] _lootTable;
             private int _goldDrop;
+            private int _level;
+            private int _expDrop;
             private PrimaryStatType _primaryStat;
 
             public string Name { get => _name; [MemberNotNull(nameof(_name))] set => _name = value; }
@@ -40,8 +36,10 @@ namespace TextRPGOne
             public int Constitution { get => _constitution; set => _constitution = value; }
             public int Initiative { get => _initiative; set => _initiative = value; }
             public Move[] MoveSet { get => _moveSet; [MemberNotNull(nameof(_moveSet))] set => _moveSet = value; }
-            public ItemType[] LootTable { get => _lootTable; [MemberNotNull(nameof(_lootTable))] set => _lootTable = value; }
+            public LootTableItem[] LootTable { get => _lootTable; [MemberNotNull(nameof(_lootTable))] set => _lootTable = value; }
             public int GoldDrop { get => _goldDrop; set => _goldDrop = value; }
+            public int Level { get => _level; set => _level = value; }
+            public int ExpDrop { get => _expDrop; set => _expDrop = value; }
             public int PrimaryStat
             {
                 get =>
@@ -60,9 +58,9 @@ namespace TextRPGOne
             }
             public NPC Clone()
             {
-                return new NPC(Name, Description, _primaryStat, Strength, Dexterity, Intelligence, Constitution, MoveSet, LootTable, GoldDrop);
+                return new NPC(Name, Description, _primaryStat, Strength, Dexterity, Intelligence, Constitution, Level, MoveSet, LootTable, GoldDrop);
             }
-            public NPC(string Name, string Description, PrimaryStatType PrimaryStat, int Strength, int Dexterity, int Intelligence, int Constitution, Move[] MoveSet, ItemType[] LootTable, int GoldDrop = 0)
+            public NPC(string Name, string Description, PrimaryStatType PrimaryStat, int Strength, int Dexterity, int Intelligence, int Constitution, int Level, Move[] MoveSet, LootTableItem[] LootTable, int GoldDrop = 0)
             {
                 this.Name = Name;
                 this.Description = Description;
@@ -82,7 +80,8 @@ namespace TextRPGOne
                 this.MaxMana = this.Mana;
                 this.LootTable = LootTable;
                 this.GoldDrop = GoldDrop;
-
+                this.Level = Level;
+                this.ExpDrop = (int)(100 * Math.Pow(1.07, this.Level));
             }
         }
 
@@ -92,10 +91,30 @@ namespace TextRPGOne
 
 
         static Move[] goblinMoves = { Club };
-        static ItemType[] goblinLoot = { ItemType.HealthPotion, ItemType.Rock };
-        static NPC Goblin = new NPC("Goblin", "A small green creature", PrimaryStatType.Strength, 10/*STR*/, 6/*DEX*/, 4/*INT*/, 10/*CON*/, goblinMoves, goblinLoot, 5/*Gold*/);
+        static LootTableItem[] goblinLoot = { new LootTableItem(ItemType.HealthPotion, 50), new LootTableItem(ItemType.Rock, 100) };
+        static NPC Goblin = new NPC("Goblin", "A small green creature", PrimaryStatType.Strength, 10/*STR*/, 6/*DEX*/, 4/*INT*/, 10/*CON*/, 1/*LVL*/, goblinMoves, goblinLoot, 5/*Gold*/);
         static Move[] wolfMoves = { Bite };
-        static Item[] wolfLoot = new Item[0];
-        static NPC Wolf = new NPC("Wolf", "A hungry forest predator", PrimaryStatType.Dexterity, 6/*STR*/, 12/*DEX*/, 4/*INT*/, 6/*CON*/, wolfMoves, wolfLoot, 0/*Gold*/);
+        static LootTableItem[] wolfLoot = { new LootTableItem(ItemType.ManaPotion, 50), new LootTableItem(ItemType.Rock, 100) };
+        static NPC Wolf = new NPC("Wolf", "A hungry forest predator", PrimaryStatType.Dexterity, 6/*STR*/, 12/*DEX*/, 4/*INT*/, 6/*CON*/, 1/*LVL*/, wolfMoves, wolfLoot, 0/*Gold*/);
     }
 }
+
+
+/* Handle Enemy EXP
+  Option 1: Based on Enemy Level (most common)
+  // Enemy drops EXP roughly equal to what player needs at that level
+  expDrop = (int)(100 * Math.Pow(1.07, enemyLevel))
+
+  // Or a fraction if you want multiple kills per level
+  expDrop = (int)(50 * Math.Pow(1.07, enemyLevel))  // ~2 kills per level
+  expDrop = (int)(33 * Math.Pow(1.07, enemyLevel))  // ~3 kills per level
+
+  Option 2: Fixed percentage of player's current requirement
+  // Enemy gives 20-30% of what player needs, based on player level
+  expDrop = (int)(100 * Math.Pow(1.07, playerLevel) * 0.25)
+
+  Option 3: Differential scaling (risk/reward for fighting higher level enemies)
+  int levelDiff = enemyLevel - playerLevel;
+  float multiplier = 1.0f + (levelDiff * 0.1f); // +10% per level difference
+  expDrop = (int)(100 * Math.Pow(1.07, enemyLevel) * multiplier);
+*/
