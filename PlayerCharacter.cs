@@ -12,17 +12,19 @@ namespace TextRPGOne
             private int _maxHealth;
             private int _mana;
             private int _maxMana;
-            private int _strength;
-            private int _dexterity;
-            private int _intelligence;
-            private int _constitution;
+            // private int _strength;
+            // private int _dexterity;
+            // private int _intelligence;
+            // private int _constitution;
             private int _initiative;
+            private Stats _stats;
             private PrimaryStatType _primaryStat;
             private int _money;
             private int _level;
             private int _exp;
             private int _maxExp;
             private List<Item> _inventory = new List<Item>();
+            private List<Item> _slots = new List<Item>();
             private Move[] _moveSet;
             private Location _currentLocation;
 
@@ -32,19 +34,20 @@ namespace TextRPGOne
             public int MaxHealth { get => _maxHealth; set => _maxHealth = value; }
             public int Mana { get => _mana; set => _mana = value; }
             public int MaxMana { get => _maxMana; set => _maxMana = value; }
-            public int Strength { get => _strength; set => _strength = value; }
-            public int Dexterity { get => _dexterity; set => _dexterity = value; }
-            public int Intelligence { get => _intelligence; set => _intelligence = value; }
-            public int Constitution { get => _constitution; set => _constitution = value; }
+            // public int Strength { get => _strength; set => _strength = value; }
+            // public int Dexterity { get => _dexterity; set => _dexterity = value; }
+            // public int Intelligence { get => _intelligence; set => _intelligence = value; }
+            // public int Constitution { get => _constitution; set => _constitution = value; }
             public int Initiative { get => _initiative; set => _initiative = value; }
+            public Stats Stats { get => _stats; [MemberNotNull(nameof(_stats))] set => _stats = value; }
             public int PrimaryStat
             {
                 get =>
                     _primaryStat switch
                     {
-                        PrimaryStatType.Strength => this.Strength,
-                        PrimaryStatType.Dexterity => this.Dexterity,
-                        PrimaryStatType.Intelligence => this.Intelligence,
+                        PrimaryStatType.Strength => this.Stats.Strength,
+                        PrimaryStatType.Dexterity => this.Stats.Dexterity,
+                        PrimaryStatType.Intelligence => this.Stats.Intelligence,
                         _ => 0
                     };
             }
@@ -53,26 +56,24 @@ namespace TextRPGOne
             public int Exp { get => _exp; set => _exp = value; }
             public int MaxExp { get => _maxExp; set => _maxExp = value; }
             public List<Item> Inventory { get => _inventory; [MemberNotNull(nameof(_inventory))] set => _inventory = value; }
+            private List<Item> Slots { get => _slots; [MemberNotNull(nameof(_slots))] set => _slots = value; }
             public Move[] MoveSet { get => _moveSet; [MemberNotNull(nameof(_moveSet))] set => _moveSet = value; }
             public Location CurrentLocation { get => _currentLocation; [MemberNotNull(nameof(_currentLocation))] set => _currentLocation = value; }
             private int SetInitiative()
             {
-                Initiative = (Dexterity - 10) / 2;
+                Initiative = (Stats.Dexterity - 10) / 2;
                 return Initiative;
             }
             public PlayerCharacter(string Name, CharacterSpec Spec, Location StartingLocation)
             {
                 this.Name = Name;
                 this.SpecName = Spec.Name;
+                this._stats = new Stats(Spec.Stats.Strength, Spec.Stats.Dexterity, Spec.Stats.Intelligence, Spec.Stats.Constitution, Spec.Stats.Wisdom, Spec.Stats.Luck);
                 this._primaryStat = Spec.PrimaryStat;
-                this.Strength = Spec.Strength;
-                this.Dexterity = Spec.Dexterity;
-                this.Intelligence = Spec.Intelligence;
-                this.Constitution = Spec.Constitution;
                 this.MoveSet = Spec.MoveSet;
                 this.CurrentLocation = StartingLocation;
-                this.Health = 100 + Constitution * 10;
-                this.Mana = 100 + Intelligence * 10;
+                this.Health = 100 + this.Stats.Constitution * 10;
+                this.Mana = 100 + this.Stats.Intelligence * 10;
                 this.MaxHealth = this.Health;
                 this.MaxMana = this.Mana;
                 this.Money = 0;

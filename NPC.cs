@@ -6,6 +6,7 @@ namespace TextRPGOne
     {
         class NPC
         {
+            //TODO change NPC stats to come from to Stats.cs
             private string _name;
             private string _description;
             private int _health;
@@ -91,10 +92,10 @@ namespace TextRPGOne
 
 
         static Move[] goblinMoves = { Club };
-        static LootTableItem[] goblinLoot = { new LootTableItem(ItemType.HealthPotion, 50), new LootTableItem(ItemType.Rock, 100) };
+        static LootTableItem[] goblinLoot = { new LootTableItem(ItemName.HealthPotion, 50), new LootTableItem(ItemName.Rock, 100) };
         static NPC Goblin = new NPC("Goblin", "A small green creature", PrimaryStatType.Strength, 10/*STR*/, 6/*DEX*/, 4/*INT*/, 10/*CON*/, 1/*LVL*/, goblinMoves, goblinLoot, 5/*Gold*/);
         static Move[] wolfMoves = { Bite };
-        static LootTableItem[] wolfLoot = { new LootTableItem(ItemType.ManaPotion, 50), new LootTableItem(ItemType.Rock, 100) };
+        static LootTableItem[] wolfLoot = { new LootTableItem(ItemName.ManaPotion, 50), new LootTableItem(ItemName.Rock, 100) };
         static NPC Wolf = new NPC("Wolf", "A hungry forest predator", PrimaryStatType.Dexterity, 6/*STR*/, 12/*DEX*/, 4/*INT*/, 6/*CON*/, 1/*LVL*/, wolfMoves, wolfLoot, 0/*Gold*/);
     }
 }

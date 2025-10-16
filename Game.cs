@@ -293,7 +293,7 @@ namespace TextRPGOne
             }
             private void FindItem()
             {
-                player.Inventory.Add(ItemDatabase.Get(ItemType.Rock));
+                player.Inventory.Add(ItemDatabase.Get(ItemName.Rock));
             }
 
             private void Explore()

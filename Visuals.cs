@@ -44,10 +44,10 @@ namespace TextRPGOne
         {
             string statsText = $@"
 [yellow]Class:[/]        [yellow]{player.SpecName}[/]
-[cyan]Strength:[/]     [yellow]{player.Strength}[/]
-[cyan]Dexterity:[/]    [yellow]{player.Dexterity}[/]
-[cyan]Intelligence:[/] [yellow]{player.Intelligence}[/]
-[cyan]Constitution:[/] [yellow]{player.Constitution}[/]";
+[cyan]Strength:[/]     [yellow]{player.Stats.Strength}[/]
+[cyan]Dexterity:[/]    [yellow]{player.Stats.Dexterity}[/]
+[cyan]Intelligence:[/] [yellow]{player.Stats.Intelligence}[/]
+[cyan]Constitution:[/] [yellow]{player.Stats.Constitution}[/]";
 
             var statsPanel = new Panel(statsText)
                 .Header("[bold yellow] Stats [/]")
