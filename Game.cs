@@ -80,6 +80,29 @@ namespace TextRPGOne
 
                 while (player.Health > 0 && currentEnemy.Health > 0)
                 {
+                    // Apply DOT effects at the start of the turn
+                    List<string> playerDotMessages;
+                    int playerDotDamage = DamageCalculator.ApplyDOTEffects(player.ActiveDoTs, out playerDotMessages);
+                    if (playerDotDamage > 0)
+                    {
+                        player.Health -= playerDotDamage;
+                        foreach (var msg in playerDotMessages)
+                        {
+                            combatLog.Add(msg);
+                        }
+                    }
+
+                    List<string> enemyDotMessages;
+                    int enemyDotDamage = DamageCalculator.ApplyDOTEffects(currentEnemy.ActiveDoTs, out enemyDotMessages);
+                    if (enemyDotDamage > 0)
+                    {
+                        currentEnemy.Health -= enemyDotDamage;
+                        foreach (var msg in enemyDotMessages)
+                        {
+                            combatLog.Add($"{currentEnemy.Name}: {msg}");
+                        }
+                    }
+
                     void PlayersAttack()
                     {
                         Console.Clear();
@@ -129,14 +152,33 @@ namespace TextRPGOne
                                 player.Mana -= playerAction.ManaCost;
                                 moveCastValid = true;
 
-                                //Player Damage Calc
-                                int baseDamage = (player.PrimaryStat + playerAction.Damage) / 2;
-                                int playerDamage = baseDamage + Random.Shared.Next(-3, 4);
-                                currentEnemy.Health -= playerDamage;
+                                //Player Damage Calc with damage types
+                                Item? playerWeapon = player.EqupimentSlots.MainHand;
+                                DamageResult damageResult = DamageCalculator.CalculateDamage(
+                                    player.PrimaryStat,
+                                    playerAction,
+                                    playerWeapon,
+                                    currentEnemy.Resistances);
+
+                                currentEnemy.Health -= damageResult.TotalDamage;
+
+                                // Add DOT effect if weapon applied one
+                                if (damageResult.AppliedDOT != null)
+                                {
+                                    currentEnemy.ActiveDoTs.Add(damageResult.AppliedDOT);
+                                }
 
                                 // Add to combat log
                                 combatLog.Add($"{player.Name} uses {playerAction.Name}!");
-                                combatLog.Add($"Dealt [red]{playerDamage}[/] damage!");
+                                combatLog.Add($"Dealt [red]{damageResult.TotalDamage}[/] damage!");
+                                if (damageResult.ElementalDamage > 0)
+                                {
+                                    combatLog.Add($"  [cyan]Elemental: {damageResult.ElementalDamage}[/]");
+                                }
+                                if (damageResult.AppliedDOT != null)
+                                {
+                                    combatLog.Add($"  [yellow]{damageResult.AppliedDOT.Type} applied![/]");
+                                }
 
                                 // Update display immediately after player attack
                                 Console.Clear();
@@ -196,14 +238,28 @@ namespace TextRPGOne
                             Console.ReadKey(true);
                         }
 
-                        //Enemy Damage Calc
-                        int enemyBaseDamage = (currentEnemy.PrimaryStat + npcAction.Damage) / 2;
-                        int npcDamage = enemyBaseDamage + Random.Shared.Next(-2, 3);
-                        player.Health -= npcDamage;
+                        //Enemy Damage Calc (NPCs don't use weapons currently, pass null)
+                        DamageResult enemyDamageResult = DamageCalculator.CalculateDamage(
+                            currentEnemy.PrimaryStat,
+                            npcAction,
+                            null, // NPCs don't have equipped weapons
+                            player.Resistances);
+
+                        player.Health -= enemyDamageResult.TotalDamage;
+
+                        // Add DOT effect if attack applied one
+                        if (enemyDamageResult.AppliedDOT != null)
+                        {
+                            player.ActiveDoTs.Add(enemyDamageResult.AppliedDOT);
+                        }
 
                         // Add to combat log
                         combatLog.Add($"{currentEnemy.Name} uses {npcAction.Name}!");
-                        combatLog.Add($"You take [red]{npcDamage}[/] damage!");
+                        combatLog.Add($"You take [red]{enemyDamageResult.TotalDamage}[/] damage!");
+                        if (enemyDamageResult.AppliedDOT != null)
+                        {
+                            combatLog.Add($"  [yellow]You are afflicted with {enemyDamageResult.AppliedDOT.Type}![/]");
+                        }
 
                         // Update display immediately after enemy attack
                         Console.Clear();
@@ -298,9 +354,21 @@ namespace TextRPGOne
 
             private void Explore()
             {
+                // Check if player has actions remaining
+                if (player.RemainingActions <= 0)
+                {
+                    AnsiConsole.MarkupLine("[red]You have no exploration actions remaining![/]");
+                    AnsiConsole.MarkupLine("[yellow]You must face the dungeon boss or rest to continue exploring.[/]");
+                    Console.ReadKey();
+                    return;
+                }
+
+                // Use an action
+                player.UseAction();
+
                 int randomOneHundred = Random.Shared.Next(101);
                 AnsiConsole.Status()
-                    .Start("Exploring...", ctx =>
+                    .Start($"Exploring... ([yellow]{player.RemainingActions}/{player.MaxActions}[/] actions remaining)", ctx =>
                     {
                         Thread.Sleep(2000);
                     });
@@ -320,8 +388,11 @@ namespace TextRPGOne
 
             private void InGameMenu()
             {
+                // Display action counter
+                AnsiConsole.MarkupLine($"[dim]Actions Remaining: [yellow]{player.RemainingActions}/{player.MaxActions}[/][/]\n");
+
                 AnsiConsole.Write(new Columns(
-                new Text("c. Character Stats"),
+                new Text("c. Character"),
                 new Text("i. Inventory"),
                 new Text("t. Travel"),
                 new Text("e. Explore")

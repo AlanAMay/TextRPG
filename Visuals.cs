@@ -42,20 +42,65 @@ namespace TextRPGOne
         }
         static void DrawCharacterStats(PlayerCharacter player)
         {
+            // Determine which stats should be highlighted based on primary stat
+            bool isStrPrimary = player.PrimaryStatType == PrimaryStatType.Strength;
+            bool isDexPrimary = player.PrimaryStatType == PrimaryStatType.Dexterity;
+            bool isIntPrimary = player.PrimaryStatType == PrimaryStatType.Intelligence;
+
             string statsText = $@"
 [yellow]Class:[/]        [yellow]{player.SpecName}[/]
-[cyan]Strength:[/]     [yellow]{player.Stats.Strength}[/]
-[cyan]Dexterity:[/]    [yellow]{player.Stats.Dexterity}[/]
-[cyan]Intelligence:[/] [yellow]{player.Stats.Intelligence}[/]
-[cyan]Constitution:[/] [yellow]{player.Stats.Constitution}[/]";
+[yellow]Level:[/]        [yellow]{player.Level}[/]
+
+[{(isStrPrimary ? "yellow" : "cyan")}]Strength:[/]     [yellow]{player.Stats.Strength}[/]
+[{(isDexPrimary ? "yellow" : "cyan")}]Dexterity:[/]    [yellow]{player.Stats.Dexterity}[/]
+[{(isIntPrimary ? "yellow" : "cyan")}]Intelligence:[/] [yellow]{player.Stats.Intelligence}[/]
+[cyan]Constitution:[/] [yellow]{player.Stats.Constitution}[/]
+[cyan]Wisdom:[/]       [yellow]{player.Stats.Wisdom}[/]
+[cyan]Luck:[/]         [yellow]{player.Stats.Luck}[/]";
 
             var statsPanel = new Panel(statsText)
                 .Header("[bold yellow] Stats [/]")
                 .Border(BoxBorder.Rounded)
                 .BorderColor(Color.Yellow)
-                .Padding(3, 0, 3, 1);
-            AnsiConsole.Write(statsPanel);
-            Console.WriteLine("Press any key to exit");
+                .Padding(2, 0, 2, 1);
+
+            string equipmentText = BuildEquipmentDisplay(player);
+
+            var equipmentPanel = new Panel(equipmentText)
+                .Header("[bold cyan] Equipment [/]")
+                .Border(BoxBorder.Rounded)
+                .BorderColor(Color.Blue)
+                .Padding(2, 0, 2, 1);
+
+            // Create a columns layout
+            var columns = new Columns(statsPanel, equipmentPanel);
+
+            AnsiConsole.Write(columns);
+            Console.WriteLine("\nPress any key to exit");
+        }
+
+        static string BuildEquipmentDisplay(PlayerCharacter player)
+        {
+            var equipment = new System.Text.StringBuilder();
+
+            equipment.AppendLine($"\n[yellow]Helmet:[/]     {GetItemName(player.EqupimentSlots.Helmet)}");
+            equipment.AppendLine($"[yellow]Shoulders:[/]  {GetItemName(player.EqupimentSlots.Shoulders)}");
+            equipment.AppendLine($"[yellow]Chest:[/]      {GetItemName(player.EqupimentSlots.Chest)}");
+            equipment.AppendLine($"[yellow]Waist:[/]      {GetItemName(player.EqupimentSlots.Waist)}");
+            equipment.AppendLine($"[yellow]Legs:[/]       {GetItemName(player.EqupimentSlots.Legs)}");
+            equipment.AppendLine($"[yellow]Boots:[/]      {GetItemName(player.EqupimentSlots.Boots)}");
+            equipment.AppendLine($"[yellow]Necklace:[/]   {GetItemName(player.EqupimentSlots.Necklace)}");
+            equipment.AppendLine($"[yellow]Ring 1:[/]     {GetItemName(player.EqupimentSlots.RingOne)}");
+            equipment.AppendLine($"[yellow]Ring 2:[/]     {GetItemName(player.EqupimentSlots.RingTwo)}");
+            equipment.AppendLine($"[yellow]Main Hand:[/]  {GetItemName(player.EqupimentSlots.MainHand)}");
+            equipment.Append($"[yellow]Off Hand:[/]   {GetItemName(player.EqupimentSlots.OffHand)}");
+
+            return equipment.ToString();
+        }
+
+        static string GetItemName(Item item)
+        {
+            return item == null ? "[dim]Empty[/]" : $"[cyan]{item.Name}[/]";
         }
         static void DrawPlayerEncounterBar(PlayerCharacter player)
         {

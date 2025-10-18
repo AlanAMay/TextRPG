@@ -13,10 +13,7 @@ namespace TextRPGOne
             private int _maxHealth;
             private int _mana;
             private int _maxMana;
-            private int _strength;
-            private int _dexterity;
-            private int _intelligence;
-            private int _constitution;
+            private Stats _stats;
             private int _initiative;
             private Move[] _moveSet;
             private LootTableItem[] _lootTable;
@@ -24,6 +21,8 @@ namespace TextRPGOne
             private int _level;
             private int _expDrop;
             private PrimaryStatType _primaryStat;
+            private Resistances _resistances = new Resistances();
+            private List<DOTEffect> _activeDoTs = new List<DOTEffect>();
 
             public string Name { get => _name; [MemberNotNull(nameof(_name))] set => _name = value; }
             public string Description { get => _description; [MemberNotNull(nameof(_description))] set => _description = value; }
@@ -31,58 +30,63 @@ namespace TextRPGOne
             public int MaxHealth { get => _maxHealth; set => _maxHealth = value; }
             public int Mana { get => _mana; set => _mana = value; }
             public int MaxMana { get => _maxMana; set => _maxMana = value; }
-            public int Strength { get => _strength; set => _strength = value; }
-            public int Dexterity { get => _dexterity; set => _dexterity = value; }
-            public int Intelligence { get => _intelligence; set => _intelligence = value; }
-            public int Constitution { get => _constitution; set => _constitution = value; }
+            public Stats Stats { get => _stats; [MemberNotNull(nameof(_stats))] set => _stats = value; }
             public int Initiative { get => _initiative; set => _initiative = value; }
             public Move[] MoveSet { get => _moveSet; [MemberNotNull(nameof(_moveSet))] set => _moveSet = value; }
             public LootTableItem[] LootTable { get => _lootTable; [MemberNotNull(nameof(_lootTable))] set => _lootTable = value; }
             public int GoldDrop { get => _goldDrop; set => _goldDrop = value; }
             public int Level { get => _level; set => _level = value; }
             public int ExpDrop { get => _expDrop; set => _expDrop = value; }
+            public Resistances Resistances { get => _resistances; [MemberNotNull(nameof(_resistances))] set => _resistances = value; }
+            public List<DOTEffect> ActiveDoTs { get => _activeDoTs; [MemberNotNull(nameof(_activeDoTs))] set => _activeDoTs = value; }
             public int PrimaryStat
             {
                 get =>
                 _primaryStat switch
                 {
-                    PrimaryStatType.Strength => this.Strength,
-                    PrimaryStatType.Dexterity => this.Dexterity,
-                    PrimaryStatType.Intelligence => this.Intelligence,
+                    PrimaryStatType.Strength => this.Stats.Strength,
+                    PrimaryStatType.Dexterity => this.Stats.Dexterity,
+                    PrimaryStatType.Intelligence => this.Stats.Intelligence,
                     _ => 0
                 };
             }
             public int SetInitiative()
             {
-                Initiative = (Dexterity - 10) / 2;
+                Initiative = (Stats.Dexterity - 10) / 2;
                 return Initiative;
             }
             public NPC Clone()
             {
-                return new NPC(Name, Description, _primaryStat, Strength, Dexterity, Intelligence, Constitution, Level, MoveSet, LootTable, GoldDrop);
+                return new NPC(Name, Description, _primaryStat, Stats, Level, MoveSet, LootTable, GoldDrop);
             }
-            public NPC(string Name, string Description, PrimaryStatType PrimaryStat, int Strength, int Dexterity, int Intelligence, int Constitution, int Level, Move[] MoveSet, LootTableItem[] LootTable, int GoldDrop = 0)
+            public NPC(string Name, string Description, PrimaryStatType PrimaryStat, Stats Stats, int Level, Move[] MoveSet, LootTableItem[] LootTable, int GoldDrop = 0)
             {
                 this.Name = Name;
                 this.Description = Description;
                 this._primaryStat = PrimaryStat;
-                this.Strength = Strength;
-                this.Dexterity = Dexterity;
-                this.Intelligence = Intelligence;
-                this.Constitution = Constitution;
                 this.MoveSet = MoveSet;
                 foreach (Move move in this.MoveSet)
                 {
                     move.Description = move.Description.Replace("__", this.Name);
                 }
-                this.Health = Constitution * 10;
-                this.Mana = Intelligence * 10;
+                this.Health = Stats.Constitution * 10;
+                this.Mana = Stats.Intelligence * 10;
                 this.MaxHealth = this.Health;
                 this.MaxMana = this.Mana;
                 this.LootTable = LootTable;
                 this.GoldDrop = GoldDrop;
                 this.Level = Level;
-                this.ExpDrop = (int)(100 * Math.Pow(1.07, this.Level));
+                //NPC Scaling
+                float scaleFactor = 1.0f + ((Level - 1) * 0.1f); // +10% stats per level
+                this._stats = new Stats(
+                    (int)(Stats.Strength * scaleFactor),
+                    (int)(Stats.Dexterity * scaleFactor),
+                    (int)(Stats.Intelligence * scaleFactor),
+                    (int)(Stats.Constitution * scaleFactor),
+                    (int)(Stats.Wisdom * scaleFactor)
+                );
+                ;
+                this.ExpDrop = (int)(100 * Math.Pow(1.07, this.Level)); // EXP DROP FORMULA
             }
         }
 
@@ -90,13 +94,16 @@ namespace TextRPGOne
         static Move Club = new Move("Club", "The __ swings a wooden club", 15, 0);
         static Move Tackle = new Move("Tackle", "The __ tackles you", 10, 0);
 
+        //Goblin
+        static Move[] GoblinMoves = { Club };
+        static LootTableItem[] GoblinLoot = { new LootTableItem(ItemName.HealthPotion, 100), new LootTableItem(ItemName.ManaPotion, 100), new LootTableItem(ItemName.RustySword, 100) };
+        static Stats GoblinStats = new Stats(14/*STR*/, 8/*DEX*/, 8/*INT*/, 12/*CON*/, 8/*WIS*/);
+        static NPC Goblin = new NPC("Goblin", "A small green creature", PrimaryStatType.Strength, GoblinStats, 1/*LVL*/, GoblinMoves, GoblinLoot, 5/*Gold*/);
 
-        static Move[] goblinMoves = { Club };
-        static LootTableItem[] goblinLoot = { new LootTableItem(ItemName.HealthPotion, 50), new LootTableItem(ItemName.Rock, 100) };
-        static NPC Goblin = new NPC("Goblin", "A small green creature", PrimaryStatType.Strength, 10/*STR*/, 6/*DEX*/, 4/*INT*/, 10/*CON*/, 1/*LVL*/, goblinMoves, goblinLoot, 5/*Gold*/);
-        static Move[] wolfMoves = { Bite };
-        static LootTableItem[] wolfLoot = { new LootTableItem(ItemName.ManaPotion, 50), new LootTableItem(ItemName.Rock, 100) };
-        static NPC Wolf = new NPC("Wolf", "A hungry forest predator", PrimaryStatType.Dexterity, 6/*STR*/, 12/*DEX*/, 4/*INT*/, 6/*CON*/, 1/*LVL*/, wolfMoves, wolfLoot, 0/*Gold*/);
+        static Move[] WolfMoves = { Bite };
+        static LootTableItem[] WolfLoot = { new LootTableItem(ItemName.HealthPotion, 100), new LootTableItem(ItemName.ManaPotion, 100), new LootTableItem(ItemName.RustySword, 100) };
+        static Stats WolfStats = new Stats(14/*STR*/, 8/*DEX*/, 8/*INT*/, 12/*CON*/, 8/*WIS*/);
+        static NPC Wolf = new NPC("Wolf", "A hungry forest predator", PrimaryStatType.Dexterity, WolfStats, 1/*LVL*/, WolfMoves, WolfLoot, 0/*Gold*/);
     }
 }
 

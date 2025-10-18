@@ -40,10 +40,14 @@ namespace TextRPGOne
             }
         }
         static Move Slash = new Move("Slash", "You swing your sword", 20, 0);
-        static Move Block = new Move("Block", "You raise your sheild", 0, 0);
+        static Move Block = new Move("Block", "Block Chance Up", 0, 10);
+        static Move WarCry = new Move("War Cry", "STR Up", 0, 10);
+        static Move Furry = new Move("Furry", "You unleash multiple slashes against the enemy", 0, 10);
         static Move[] WarriorMoveSet = {
             Slash,
-            Block
+            Block,
+            WarCry,
+            Furry
         };
         static Stats WarriorStats = new Stats(14/*STR*/, 8/*DEX*/, 8/*INT*/, 12/*CON*/, 8/*WIS*/, 10/*LUK*/)/*60 Total*/;
         static CharacterSpec Warrior = new CharacterSpec("Warrior", "The Warrior is a stout class with decent damage", PrimaryStatType.Strength, WarriorStats, WarriorMoveSet);
